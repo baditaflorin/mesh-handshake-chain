@@ -18,7 +18,7 @@ test("paste-based handshake: chain length grows, both peers see longest chain of
 
     await a.locator(".mesh-qrx-payload summary").click();
     const payload = (await a.locator(".mesh-qrx-payload code").textContent()) ?? "";
-    await b.getByPlaceholder("or paste a mesh:// payload").fill(payload);
+    await b.getByPlaceholder("or paste a payload (URL or mesh://)").fill(payload);
     await b.getByRole("button", { name: "use", exact: true }).click();
 
     await expect(a.locator(".viral-status")).toContainText("longest chain: 2");
