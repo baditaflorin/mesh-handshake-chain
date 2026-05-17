@@ -3,6 +3,7 @@ import {
   QRExchange,
   longestSimplePath,
   makeScanPayload,
+  usePerPeerValue,
   type MeshConfig,
   type YRoom,
   type Edge,
@@ -29,28 +30,27 @@ function Body({ room, config }: { room: YRoom; config: MeshConfig }) {
   );
   const [, rerender] = useState(0);
 
+  const names = usePerPeerValue<string>(room, "names", "");
+
   useEffect(() => {
     if (name) localStorage.setItem(NAME_KEY(config.storagePrefix), name);
   }, [name, config.storagePrefix]);
 
   useEffect(() => {
     const edges = room.doc.getArray<Edge>("edges");
-    const names = room.doc.getMap<string>("names");
     const cb = () => rerender((n) => n + 1);
     edges.observe(cb);
-    names.observe(cb);
     return () => {
       edges.unobserve(cb);
-      names.unobserve(cb);
     };
   }, [room]);
 
   const edges = room.doc.getArray<Edge>("edges");
-  const names = room.doc.getMap<string>("names");
+  const namesMap = room.doc.getMap<string>("names");
 
   // register my name
   useEffect(() => {
-    if (name.trim()) names.set(room.peerId, name.trim());
+    if (name.trim()) names.setMy(name.trim());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, room.peerId]);
 
@@ -63,8 +63,8 @@ function Body({ room, config }: { room: YRoom; config: MeshConfig }) {
     if (!t) return;
     if (otherPeerId === room.peerId) return;
     room.doc.transact(() => {
-      names.set(room.peerId, t);
-      if (otherName) names.set(otherPeerId, otherName);
+      namesMap.set(room.peerId, t);
+      if (otherName) namesMap.set(otherPeerId, otherName);
       // bidirectional edge inserted as a single transaction
       if (!has(room.peerId, otherPeerId))
         edges.push([{ from: room.peerId, to: otherPeerId, ts: Date.now() }]);
@@ -82,7 +82,7 @@ function Body({ room, config }: { room: YRoom; config: MeshConfig }) {
     allPeers.add(e.from);
     allPeers.add(e.to);
   });
-  names.forEach((_v, k) => allPeers.add(k));
+  names.entries.forEach(([k]) => allPeers.add(k));
 
   return (
     <div className="viral-screen">
@@ -120,7 +120,7 @@ function Body({ room, config }: { room: YRoom; config: MeshConfig }) {
               <li key={p} className={p === room.peerId ? "is-me" : ""}>
                 {i > 0 && <span className="hsc-arrow">→</span>}
                 <span className="hsc-node">
-                  {names.get(p) ?? p.slice(0, 6)}
+                  {names.valueOf(p) ?? p.slice(0, 6)}
                   {p === room.peerId ? " (you)" : ""}
                 </span>
               </li>
@@ -139,7 +139,7 @@ function Body({ room, config }: { room: YRoom; config: MeshConfig }) {
               .filter((e) => e.from === room.peerId)
               .map((e) => (
                 <li key={e.to}>
-                  <strong>{names.get(e.to) ?? e.to.slice(0, 6)}</strong>
+                  <strong>{names.valueOf(e.to) ?? e.to.slice(0, 6)}</strong>
                   <span style={{ opacity: 0.6, marginLeft: "0.4rem" }}>
                     {new Date(e.ts).toLocaleTimeString()}
                   </span>
