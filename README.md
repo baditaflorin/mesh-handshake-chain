@@ -1,7 +1,7 @@
 # mesh-handshake-chain
 
 [![pages](https://img.shields.io/badge/live-baditaflorin.github.io%2Fmesh-handshake-chain-22d3ee)](https://baditaflorin.github.io/mesh-handshake-chain/)
-[![version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/baditaflorin/mesh-handshake-chain/blob/main/package.json)
+[![version](https://img.shields.io/badge/version-0.1.1-blue)](https://github.com/baditaflorin/mesh-handshake-chain/blob/main/package.json)
 [![license](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
 > Pairwise scan handshakes — find the longest unbroken contact chain in the room
